@@ -4,18 +4,18 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Core
+namespace Core.Entities
 {
-    public class Blog
+    public class Blog : BaseEntity
     {
-        public int Id { get; set; }
+
         public string Url { get; set; }
         public bool IsPublic { get; set; }
 
         public int BlogTypeId { get; set; }
         public BlogType BlogType { get; set; }
 
-        public List<Post> Posts { get; set;}
+        public List<Post> Posts { get; set; }
 
     }
 }

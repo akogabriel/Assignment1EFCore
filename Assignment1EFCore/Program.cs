@@ -1,4 +1,5 @@
-﻿using Core;
+﻿using Core.DataAccess;
+using Core.Entities;
 
 namespace Assignment1EFCore
 {
@@ -6,59 +7,93 @@ namespace Assignment1EFCore
     {
         static void Main(string[] args)
         {
+            var userRepo = new Repo<User>();   //Initialize the repository for User
 
             using (var context = new DataContext())
             {
-
-                var users = new[]
-                {
-                    new User { Name = "Malik Prince", EmailAddress = "malik@example.com", PhoneNumber = "123-456-7890" },
-                    new User { Name = "Jane Boston", EmailAddress = "jane@example.com", PhoneNumber = "987-654-3210" },
-                    new User { Name = "Bob Jonah", EmailAddress = "bob@example.com", PhoneNumber = "555-555-5555" }
-                };
-                context.Users.AddRange(users);
-                context.SaveChanges();
-
-
-
-                var blogTypes = new[]
-                {
-                new BlogType { Status = "Active", Name = "Tech", Description = "Technology Blogs" },
-                new BlogType { Status = "Active", Name = "Lifestyle", Description = "Lifestyle Blogs" }
-                };
-                context.BlogTypes.AddRange(blogTypes);
-                context.SaveChanges();
-
-                
-                var postTypes = new[]
-                {
-                new PostType { Status = "Published", Name = "Article", Description = "Article Post" },
-                new PostType { Status = "Draft", Name = "Tutorial", Description = "Tutorial Post" }
-                };
-                context.PostTypes.AddRange(postTypes);
-                context.SaveChanges();
-
-
-                //create a new blog
-                var blog = new Blog { Url = "http://example.com", IsPublic = true, BlogTypeId = 1 };
-                context.Blogs.Add(blog);
-                context.SaveChanges();
-
-                // Add a post tied to one of the users
-                var post = new Post
-                {
-                    Title = "First Post",
-                    Content = "This is the content of the first post.",
-                    BlogId = blog.Id,
-                    PostTypeId = postTypes.First().Id,
-                    UserId = users.First().Id
-                };
-
-                //Add the post to the Post table
-                context.Posts.Add(post);
-                context.SaveChanges();
+                context.Database.EnsureCreated();   //Ensure the database is created and apply migrations
             }
-            
+
+            TestDatabase(userRepo);  //Test database CRUD operations
+
+        }
+
+        // Method to list all users
+        public static void ListAllUsers(Repo<User> userRepo)
+        {
+            var users = userRepo.GetAll();
+            Console.WriteLine("List of Users:");
+            foreach (var user in users)
+            {
+                Console.WriteLine($"ID: {user.Id}, Name: {user.Name}, Email: {user.EmailAddress}, Phone: {user.PhoneNumber}");
+            }
+            Console.WriteLine();
+        }
+
+        // Method to add a new user
+        public static void AddUser(Repo<User> userRepo, string name, string email, string phone)
+        {
+            var newUser = new User { Name = name, EmailAddress = email, PhoneNumber = phone };
+            userRepo.Create(newUser);
+            Console.WriteLine($"Added new user: {name}");
+        }
+
+        // Method to update an existing user
+        public static void UpdateUser(Repo<User> userRepo, int userId, string newName, string newEmail, string newPhone)
+        {
+            var user = userRepo.Read(userId);
+            if (user != null)
+            {
+                user.Name = newName;
+                user.EmailAddress = newEmail;
+                user.PhoneNumber = newPhone;
+                userRepo.Update(user);
+                Console.WriteLine($"Updated user ID {userId}");
+            }
+            else
+            {
+                Console.WriteLine($"User ID {userId} not found.");
+            }
+        }
+
+        // Method to delete a user
+        public static void DeleteUser(Repo<User> userRepo, int userId)
+        {
+            var user = userRepo.Read(userId);
+            if (user != null)
+            {
+                userRepo.Delete(userId);
+                Console.WriteLine($"Deleted user ID {userId}");
+            }
+            else
+            {
+                Console.WriteLine($"User ID {userId} not found.");
+            }
+        }
+
+        public static void TestDatabase(Repo<User> userRepo)
+        {
+            // Initial list of users
+            ListAllUsers(userRepo);
+
+            // Add a new user
+            AddUser(userRepo, "Alice Johnson", "alice@example.com", "111-222-3333");
+            ListAllUsers(userRepo);
+
+            // Update an existing user
+            var user = userRepo.GetAll().FirstOrDefault(u => u.Name == "Alice Johnson");
+            if (user != null)
+            {
+                UpdateUser(userRepo, user.Id, "Alice Brown", "alice.brown@example.com", "222-333-4444");
+                ListAllUsers(userRepo);
+            }
+
+            // Delete the user
+            if (user != null)
+            {
+                DeleteUser(userRepo, user.Id);
+                ListAllUsers(userRepo);
+            }
         }
     }
 }

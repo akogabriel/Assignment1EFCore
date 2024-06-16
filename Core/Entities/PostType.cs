@@ -4,14 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Core
+namespace Core.Entities
 {
-    public class User
+    public class PostType : BaseEntity
     {
-        public int Id { get; set; }
+        public string Status { get; set; }
         public string Name { get; set; }
-        public string EmailAddress { get; set; }
-        public string PhoneNumber { get; set; }
+        public string Description { get; set; }
 
         public List<Post> Posts { get; set; }
     }
